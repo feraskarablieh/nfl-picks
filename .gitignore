@@ -1,0 +1,6 @@
+.claude/
+.DS_Store
+# claude.ai artifact version and its score-refresh helper (not part of the public site)
+claude-artifact/
+data/
+refresh_scores.py
