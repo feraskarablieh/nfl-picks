@@ -1,0 +1,68 @@
+/* Shared styles for the SMS, privacy and terms pages; same tokens and turf band as index.html */
+:root{
+  --turf:#1d4d2e; --turf-deep:#123620; --chalk:#f6f5ee; --chalk-dim:rgba(246,245,238,.72);
+  --ground:#eef1ea; --card:#ffffff; --ink:#16201a; --muted:#5a675e; --rule:#d5dcd2; --soft:#e6ebe3;
+  --flag:#e9b10c; --flag-ink:#2f2400; --win:#16804a; --loss:#c1352b;
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-label:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --turf:#163d24; --turf-deep:#0d2817; --chalk:#f1f0e8; --chalk-dim:rgba(241,240,232,.7);
+    --ground:#0e1511; --card:#161f19; --ink:#e7ece6; --muted:#93a097; --rule:#28352c; --soft:#1d2820;
+    --flag:#f2c230; --flag-ink:#2f2400; --win:#3dbb74; --loss:#ee6259;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;padding-bottom:env(safe-area-inset-bottom,0px)}
+:focus-visible{outline:2px solid var(--flag);outline-offset:2px}
+a{color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.band{
+  color:var(--chalk);
+  background:
+    repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),rgba(255,255,255,.10) calc(10% - 2px) 10%),
+    linear-gradient(180deg,var(--turf),var(--turf-deep));
+  border-bottom:4px solid var(--flag);
+}
+.band .wrap{padding-block:calc(28px + env(safe-area-inset-top,0px)) 28px}
+.back{font-family:var(--f-label);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:13px;color:var(--chalk-dim);text-decoration:none}
+.back:hover{color:var(--chalk)}
+.eyebrow{font-family:var(--f-label);font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:13px;color:var(--chalk-dim);margin-top:18px}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(38px,7vw,58px);line-height:.95;margin:6px 0 0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.lede{margin:14px 0 0;color:var(--chalk-dim);max-width:56ch}
+
+main .wrap{padding-block:28px 12px}
+h2{font-family:var(--f-display);font-weight:800;font-size:26px;text-transform:uppercase;margin:32px 0 8px;letter-spacing:.01em}
+h2:first-child{margin-top:0}
+p,li{max-width:68ch}
+ul{padding-left:20px}
+.updated{color:var(--muted);font-size:14px}
+
+.card{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:22px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:2px;background:var(--rule);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin:0 0 24px}
+.facts div{background:var(--card);padding:12px 16px}
+.facts b{display:block;font-family:var(--f-label);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.facts span{font-weight:600}
+
+.sample{background:var(--soft);border-radius:18px 18px 18px 4px;padding:12px 16px;max-width:420px;font-size:15px;margin:8px 0 0}
+
+form{display:grid;gap:16px}
+label.field{display:grid;gap:6px;font-family:var(--f-label);font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:14px;color:var(--muted)}
+input[type=tel]{font:600 20px/1.2 var(--f-body);color:var(--ink);background:var(--ground);border:1px solid var(--rule);border-radius:8px;padding:12px 14px;width:100%;max-width:320px;letter-spacing:.02em}
+input[type=tel]:focus{outline:2px solid var(--flag);outline-offset:1px;border-color:transparent}
+.consent{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:14px;color:var(--muted);line-height:1.5}
+.consent input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--turf)}
+button{appearance:none;border:0;cursor:pointer;justify-self:start;font-family:var(--f-label);font-weight:700;font-size:17px;letter-spacing:.1em;text-transform:uppercase;background:var(--flag);color:var(--flag-ink);padding:12px 22px;border-radius:8px}
+button:disabled{opacity:.6;cursor:default}
+.status{margin:0;font-weight:600;min-height:1.5em}
+.status.ok{color:var(--win)}
+.status.err{color:var(--loss)}
+
+footer .wrap{padding-block:12px 32px;font-size:13px;color:var(--muted)}
+footer nav{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px}

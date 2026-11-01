@@ -168,6 +168,7 @@ tr.empty td{color:var(--muted)}
 .empty-state p{margin:0;color:var(--muted);max-width:52ch}
 footer .wrap{padding-block:0 32px;font-size:13px;color:var(--muted)}
 footer a{color:inherit}
+.foot-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-bottom:6px;font-weight:600}
 </style>
 </head>
 <body>
@@ -188,7 +189,10 @@ footer a{color:inherit}
   </div>
 </header>
 <main><div class="wrap" id="view"></div></main>
-<footer><div class="wrap">Scores and schedule from ESPN, refreshed every 5 minutes while this page is open. Not affiliated with the NFL.</div></footer>
+<footer><div class="wrap">
+  <nav class="foot-links"><a href="sms.html">Get picks by text</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+  Scores and schedule from ESPN, refreshed every 5 minutes while this page is open. Not affiliated with the NFL.
+</div></footer>
 
 <script>
 const SEASON = 2026, WEEKS = 18, REFRESH_MS = 5 * 60 * 1000;

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pick Texts · Feras's Pick Sheet</title>
+<meta name="description" content="Sign up to get Feras's weekly NFL picks by text message.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d4d2e'/%3E%3Cellipse cx='16' cy='16' rx='11' ry='7' fill='%238a4b22' transform='rotate(-35 16 16)'/%3E%3Cpath d='M11 21l10-10M13 15l2 2M15 13l2 2M17 11l2 2' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="pages.css">
+</head>
+<body>
+<header class="band">
+  <div class="wrap">
+    <a class="back" href="./">&larr; Pick sheet</a>
+    <div class="eyebrow">Feras's Picks &middot; text alerts</div>
+    <h1>Get my picks by text</h1>
+    <p class="lede">One text a week with my NFL picks for the week's games, sent before the Sunday slate. That's it.</p>
+  </div>
+</header>
+
+<main><div class="wrap">
+  <div class="facts">
+    <div><b>What</b><span>Weekly NFL picks</span></div>
+    <div><b>How often</b><span>About 1 text a week, Sept–Feb</span></div>
+    <div><b>Cost</b><span>Free. Msg &amp; data rates may apply</span></div>
+    <div><b>Stop anytime</b><span>Reply STOP</span></div>
+  </div>
+
+  <div class="card">
+    <form id="signup" novalidate>
+      <label class="field">Mobile number (US)
+        <input type="tel" id="phone" name="phone" inputmode="tel" autocomplete="tel-national" placeholder="(555) 555-0123" required>
+      </label>
+      <label class="consent">
+        <input type="checkbox" id="consent" name="consent" required>
+        <span>By checking this box and selecting &ldquo;Text me picks,&rdquo; I agree to receive recurring automated marketing text messages from Feras's Picks at the number provided, with weekly NFL picks. Consent is not a condition of any purchase. Msg frequency varies (about 1 per week during the NFL season). Msg &amp; data rates may apply. Reply HELP for help or STOP to cancel. See the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</span>
+      </label>
+      <button type="submit" id="submit">Text me picks</button>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+
+  <h2>What you'll get</h2>
+  <p>A text like this, once a week:</p>
+  <p class="sample">Feras's Picks Wk 8: Lions -2.5, Commanders -2.5, Bills ML, Seahawks ML. Full slate: feraskarablieh.github.io/nfl-picks Reply STOP to opt out</p>
+
+  <h2>How it works</h2>
+  <ul>
+    <li>Enter your number and check the box. You'll get one text asking you to reply <b>Y</b> to confirm. Nothing else is sent until you do.</li>
+    <li>Reply <b>STOP</b> at any time to unsubscribe. You'll get one final text confirming it, and nothing after that.</li>
+    <li>Reply <b>HELP</b> for help, or email <a href="mailto:ferask@gmail.com">ferask@gmail.com</a>.</li>
+    <li>Carriers are not liable for delayed or undelivered messages.</li>
+  </ul>
+  <p>Picks are for fun, not betting advice. Your number is only used to send these texts. It is never sold or shared. See the <a href="privacy.html">Privacy Policy</a>.</p>
+</div></main>
+
+<footer><div class="wrap">
+  <nav><a href="./">Pick sheet</a><a href="sms.html">Pick texts</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+  Not affiliated with the NFL.
+</div></footer>
+
+<script>
+// Klaviyo client subscribe: public site ID only, no secret key. Adds the number to the
+// "Text Messaging List", whose double opt-in sends the "reply Y to confirm" text.
+const KLAVIYO_SITE_ID = "UxveFb", SMS_LIST_ID = "SHDB4x", REVISION = "2026-10-15";
+
+const form = document.getElementById("signup"), phone = document.getElementById("phone"),
+      consent = document.getElementById("consent"), submit = document.getElementById("submit"),
+      status = document.getElementById("status");
+
+function toE164(raw) {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length === 10) return "+1" + digits;
+  if (digits.length === 11 && digits[0] === "1") return "+" + digits;
+  return null;
+}
+
+function show(msg, kind) { status.textContent = msg; status.className = "status " + (kind || ""); }
+
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+  const number = toE164(phone.value);
+  if (!number) return show("Enter a 10-digit US mobile number.", "err");
+  if (!consent.checked) return show("Check the box to agree to receive texts.", "err");
+
+  submit.disabled = true; show("Signing you up…");
+  try {
+    const res = await fetch(`https://a.klaviyo.com/client/subscriptions?company_id=${KLAVIYO_SITE_ID}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", revision: REVISION },
+      body: JSON.stringify({ data: {
+        type: "subscription",
+        attributes: {
+          custom_source: "nfl-picks site: sms.html",
+          profile: { data: { type: "profile", attributes: {
+            phone_number: number,
+            subscriptions: { sms: { marketing: { consent: "SUBSCRIBED" } } }
+          } } }
+        },
+        relationships: { list: { data: { type: "list", id: SMS_LIST_ID } } }
+      } })
+    });
+    if (!res.ok) throw new Error(res.status);
+    form.reset();
+    show("You're in. Check your phone and reply Y to confirm.", "ok");
+  } catch (err) {
+    show("That didn't go through. Please try again in a minute.", "err");
+  } finally {
+    submit.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
