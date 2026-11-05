@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updatedAt": "2026-11-05T13:15:01Z",
+  "updatedAt": "2026-11-05T13:17:28Z",
   "weeks": {
     "1": [],
     "2": [],
@@ -10,6 +10,6 @@
     "6": [],
     "7": [],
     "8": ["WSH", "KC", "NE", "SEA"],
-    "9": ["CIN", "DAL", "DEN", "DET", "LAR", "NYG", "HOU", "SF", "CHI", "BUF"]
+    "9": ["CIN", "DAL", "DEN", "DET", "LAR", "NYG", "HOU", "CHI", "BUF"]
   }
 }
