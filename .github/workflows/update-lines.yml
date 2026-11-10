@@ -1,0 +1,42 @@
+name: Update pick lines
+
+# Moves against-the-spread picks to ESPN's current line until each game kicks off.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-lines
+  cancel-in-progress: false
+
+jobs:
+  lines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull current lines from ESPN
+        run: python3 .github/scripts/update_lines.py
+
+      - name: Commit changed lines
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet picks.json; then
+            echo "No line changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Update pick lines from ESPN"
+          for i in 1 2 3; do
+            git pull --rebase -q && git push -q && break
+            sleep 5
+          done
+          # pushes made with the workflow token may not start a Pages build on their own
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" >/dev/null || true

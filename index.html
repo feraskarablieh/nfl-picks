@@ -379,7 +379,7 @@ function renderPicks(){
       </div>
     </div>
     ${liveBar()}
-    ${s.picked ? `<div class="note">${ats ? "Graded against the spread, using the line when each pick was made." : "Graded straight up: a pick wins if that team wins."}</div>` : `<div class="note">${w > now ? "Picks for this week aren't in yet." : "No picks were made for this week."}</div>`}
+    ${s.picked ? `<div class="note">${ats ? "Graded against the spread. Lines follow ESPN's line until kickoff, then lock." : "Graded straight up: a pick wins if that team wins."}</div>` : `<div class="note">${w > now ? "Picks for this week aren't in yet." : "No picks were made for this week."}</div>`}
     <div class="games">${doc.games.map(g=>gameCard(g, picks[g.id])).join("")}</div>
     <div class="note">Times shown in your time zone.</div>`;
 }
