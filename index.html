@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Feras's Pick Sheet</title>
-<meta name="description" content="Feras's straight-up NFL picks for the 2026 season, with live scores, week-by-week history and pick performance.">
+<meta name="description" content="Feras's NFL picks for the 2026 season, with live scores, week-by-week history and pick performance.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d4d2e'/%3E%3Cellipse cx='16' cy='16' rx='11' ry='7' fill='%238a4b22' transform='rotate(-35 16 16)'/%3E%3Cpath d='M11 21l10-10M13 15l2 2M15 13l2 2M17 11l2 2' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -176,7 +176,7 @@ footer a{color:inherit}
   <div class="wrap">
     <div class="band-top">
       <div>
-        <div class="eyebrow">2026 NFL season &middot; straight-up picks</div>
+        <div class="eyebrow">2026 NFL season &middot; weekly picks</div>
         <h1>Feras's Pick Sheet</h1>
       </div>
       <div class="board" id="board" aria-label="Season record"></div>
@@ -252,24 +252,32 @@ async function loadPicks(){
   S.pickLists = j.weeks || {};
   S.picksUpdated = j.updatedAt || null;
 }
-// picks.json lists the team abbreviations picked each week; each team plays once a week, so the team names the game
+// picks.json lists the teams picked each week; each team plays once a week, so the team names the game.
+// "DET" is a straight-up pick; "DET -2.5" (or "NE +3", "DAL PK") is against the spread, with the line from the picked team's side.
+function parsePick(x){
+  const m = /^\s*([A-Z]{2,3})(?:\s+(PK|[+-]?\d+(?:\.\d+)?))?\s*$/i.exec(String(x));
+  if(!m) return null;
+  return { team:m[1].toUpperCase(), spread: m[2]==null ? null : /pk/i.test(m[2]) ? 0 : Number(m[2]) };
+}
 function picksFor(w){
-  const list = (S.pickLists[w] || []).map(x=>String(x).toUpperCase()), doc = S.weeks[w], out = {};
+  const list = (S.pickLists[w] || []).map(parsePick).filter(Boolean), doc = S.weeks[w], out = {};
   if(!doc) return out;
   for(const g of doc.games){
-    if(list.includes(g.away.abbr)) out[g.id] = g.away.abbr;
-    else if(list.includes(g.home.abbr)) out[g.id] = g.home.abbr;
+    const p = list.find(p=>p.team===g.away.abbr) || list.find(p=>p.team===g.home.abbr);
+    if(p) out[g.id] = p;
   }
   return out;
 }
+const fmtSpread = s => s==null ? "" : s===0 ? "PK" : (s>0?"+":"")+s;
 
 /* ---------- scoring ---------- */
 function locked(g){ return g.state !== "pre" || Date.now() >= kickoff(g).getTime(); }
-function grade(g, pick){
-  if(!pick) return "none";
-  if(g.state !== "post" || !g.winner) return "pending";
-  if(g.winner === "TIE") return "push";
-  return pick === g.winner ? "win" : "loss";
+function grade(g, p){
+  if(!p) return "none";
+  if(g.state !== "post") return "pending";
+  const margin = p.team===g.home.abbr ? g.homeScore-g.awayScore : g.awayScore-g.homeScore;
+  const m = margin + (p.spread ?? 0);
+  return m>0 ? "win" : m<0 ? "loss" : "push";
 }
 function weekNums(){ return Object.keys(S.weeks).map(Number).sort((a,b)=>a-b); }
 function weekStats(w){
@@ -297,9 +305,9 @@ function allGraded(){
   for(const w of weekNums()){
     const picks = picksFor(w);
     for(const g of S.weeks[w].games){
-      const pick = picks[g.id], r = grade(g, pick);
+      const p = picks[g.id], r = grade(g, p);
       if(r==="none") continue;
-      out.push({w,g,pick,r,t:kickoff(g).getTime()});
+      out.push({w,g,pick:p.team,spread:p.spread,r,t:kickoff(g).getTime()});
     }
   }
   return out.sort((a,b)=>a.t-b.t);
@@ -356,6 +364,7 @@ function renderPicks(){
   const times = doc.games.map(kickoff);
   const range = `${dateFmt.format(new Date(Math.min(...times)))} – ${dateFmt.format(new Date(Math.max(...times)))}`;
   const s = weekStats(w);
+  const ats = Object.values(picks).some(p=>p.spread!=null);
   return `
     <div class="weeks" role="list" aria-label="Weeks">${strip}</div>
     <div class="week-head">
@@ -370,7 +379,7 @@ function renderPicks(){
       </div>
     </div>
     ${liveBar()}
-    ${s.picked ? "" : `<div class="note">${w > now ? "Picks for this week aren't in yet." : "No picks were made for this week."}</div>`}
+    ${s.picked ? `<div class="note">${ats ? "Graded against the spread, using the line when each pick was made." : "Graded straight up: a pick wins if that team wins."}</div>` : `<div class="note">${w > now ? "Picks for this week aren't in yet." : "No picks were made for this week."}</div>`}
     <div class="games">${doc.games.map(g=>gameCard(g, picks[g.id])).join("")}</div>
     <div class="note">Times shown in your time zone.</div>`;
 }
@@ -383,7 +392,8 @@ function gameCard(g, pick){
   else if(isLocked){ status = "Kicked off"; cls="live"; }
   else status = g.line ? `Line ${g.line}` : "";
   const when = `${dayFmt.format(kickoff(g))}${g.broadcast?` · ${g.broadcast}`:""}`;
-  const verdict = {win:"✓ Correct", loss:"✗ Missed", push:"Push", pending:"Picked", none:"No pick"}[r];
+  const ats = pick && pick.spread!=null;
+  const verdict = {win: ats?"✓ Covered":"✓ Correct", loss: ats?"✗ Didn't cover":"✗ Missed", push:"Push", pending:"Picked", none:"No pick"}[r];
   const vcls = r==="pending" ? "none" : r;
   return `<article class="game r-${r}">
     <div class="g-head"><span>${esc(when)}</span><span class="status ${cls}">${esc(status)}</span></div>
@@ -392,12 +402,12 @@ function gameCard(g, pick){
   </article>`;
 }
 function teamRow(g, side, pick){
-  const t = g[side], picked = pick===t.abbr;
+  const t = g[side], picked = pick?.team===t.abbr;
   const won = g.state==="post" && g.winner===t.abbr;
   return `<div class="team ${picked?"picked":""} ${won?"won":""}">
     ${chip(t)}
     <span class="tname"><span class="city">${side==="home"?"@ ":""}${esc(t.city)}</span><b>${esc(t.name)}<span class="rec">${esc(t.record)}</span></b></span>
-    <span class="pick-tag">PICK</span>
+    <span class="pick-tag">PICK${picked && pick.spread!=null ? " "+fmtSpread(pick.spread) : ""}</span>
     <span class="score">${g.state!=="pre" ? g[side+"Score"] : ""}</span>
   </div>`;
 }
@@ -456,7 +466,10 @@ function renderStats(list, t){
   const split = (label, pred) => { const xs = done.filter(pred), a = totals(xs), p = pct(a.w,a.l);
     return `<div class="split-row"><span class="k">${label}</span><span class="v">${rec(a.w,a.l)} &middot; ${fmtPct(p)}</span><span class="meter"><i style="width:${p??0}%"></i></span></div>`; };
   const prime = x => { const h = Number(etHour.format(kickoff(x.g))); return h>=19 || h<4; };
-  const fav = x => { const m = /^([A-Z]{2,3})\s-/.exec(x.g.line||""); return m ? m[1] : null; };
+  const fav = x => {
+    if(x.spread!=null) return x.spread<0 ? x.pick : x.spread>0 ? (x.pick===x.g.home.abbr ? x.g.away.abbr : x.g.home.abbr) : null;
+    const m = /^([A-Z]{2,3})\s-/.exec(x.g.line||""); return m ? m[1] : null;
+  };
   const withLine = done.filter(x=>fav(x));
   const splits = `<div class="splits">
     <div class="panel"><h3>Where they picked</h3>${split("Home teams", x=>x.pick===x.g.home.abbr)}${split("Road teams", x=>x.pick===x.g.away.abbr)}</div>

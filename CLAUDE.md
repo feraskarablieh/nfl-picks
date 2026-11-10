@@ -6,14 +6,14 @@ Repo: github.com/feraskarablieh/nfl-picks (public, GitHub Pages serves `main` at
 ## Files
 
 - `index.html` is the whole site (no build step). It fetches schedule and live scores from ESPN's public scoreboard API (`site.api.espn.com/.../nfl/scoreboard?seasontype=2&week=N&dates=2026`) in the browser and refreshes every 5 minutes. No server, no scheduled job.
-- `picks.json` holds the picks: `weeks` maps week number (string) to a list of ESPN team abbreviations picked to win. Each team plays once a week, so the team identifies the game. Picks are straight-up winners.
+- `picks.json` holds the picks: `weeks` maps week number (string) to a list of picks. Each team plays once a week, so the team identifies the game. `"DET"` is a straight-up pick (weeks 1–9). `"DET -2.5"` is against the spread, with the line from the picked team's side (`"NE +3"` for an underdog, `"DAL PK"` for a pick'em). Feras picks against the spread from Week 10 on. Record the ESPN line at the time of the pick, so later line moves don't change the grade.
 - `claude-artifact/`, `data/`, `refresh_scores.py` are an older claude.ai artifact version, gitignored and no longer updated. Ignore them.
 
 ## Updating picks ("Week 9: Bills, Chiefs, ...")
 
 1. Map team names to ESPN abbreviations (WSH, LAR, LAC, JAX, LV, NE, NO, SF, TB, GB, KC, NYG, NYJ...).
-2. Check that week's matchups on ESPN: every pick must play that week, no two picks in the same game, and say whether any game has already kicked off.
-3. Edit `picks.json`: set the week's list (merge with existing picks for that week unless told to replace) and bump `updatedAt` to the current UTC time.
+2. Check that week's matchups on ESPN: every pick must play that week, no two picks in the same game, and say whether any game has already kicked off. Note the current line (`competitions[0].odds[0].details`, e.g. `DET -2.5`) for each pick.
+3. Edit `picks.json`: set the week's list, as `"TEAM ±spread"` entries (merge with existing picks for that week unless told to replace) and bump `updatedAt` to the current UTC time.
 4. Validate with `python3 -m json.tool picks.json`, commit, and push to `main`. Pages redeploys in about a minute. Confirm with `gh api repos/feraskarablieh/nfl-picks/pages/builds/latest`.
 5. Reply with a table of pick, matchup, and kickoff in ET.
 
