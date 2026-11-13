@@ -2,7 +2,8 @@
 
 A pick like "DET -2.5" follows the market while its game hasn't started; once it kicks off
 the stored line stops changing, so picks are graded on the last line seen before kickoff.
-Straight-up picks ("DET") are left alone. Prints what changed; writes picks.json only if needed.
+Straight-up picks ("DET") and custom lines marked fixed ("DET -2.5 fixed") are left alone.
+Prints what changed; writes picks.json only if needed.
 """
 import json
 import re
@@ -13,7 +14,7 @@ from pathlib import Path
 
 PICKS = Path(__file__).resolve().parents[2] / "picks.json"
 URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=2&week={w}&dates={season}"
-PICK_RE = re.compile(r"^\s*([A-Z]{2,3})(?:\s+(PK|[+-]?\d+(?:\.\d+)?))?\s*$", re.I)
+PICK_RE = re.compile(r"^\s*([A-Z]{2,3})(?:\s+(PK|[+-]?\d+(?:\.\d+)?))?(?:\s+(fixed))?\s*$", re.I)
 
 
 def fmt(team, spread):
@@ -58,8 +59,8 @@ def main(path=PICKS):
     changes = []
     for wk, picks in doc["weeks"].items():
         parsed = [PICK_RE.match(p) for p in picks]
-        if not any(m and m.group(2) is not None for m in parsed):
-            continue  # no against-the-spread picks this week
+        if not any(m and m.group(2) is not None and not m.group(3) for m in parsed):
+            continue  # no market-following picks this week
         with urllib.request.urlopen(URL.format(w=wk, season=season), timeout=30) as r:
             events = json.load(r)["events"]
         by_team = {}
@@ -67,8 +68,8 @@ def main(path=PICKS):
             for x in e["competitions"][0]["competitors"]:
                 by_team[x["team"]["abbreviation"]] = e
         for i, m in enumerate(parsed):
-            if not m or m.group(2) is None:
-                continue
+            if not m or m.group(2) is None or m.group(3):
+                continue  # straight-up pick or fixed custom line
             team = m.group(1).upper()
             game = by_team.get(team)
             if not game:

@@ -254,10 +254,11 @@ async function loadPicks(){
 }
 // picks.json lists the teams picked each week; each team plays once a week, so the team names the game.
 // "DET" is a straight-up pick; "DET -2.5" (or "NE +3", "DAL PK") is against the spread, with the line from the picked team's side.
+// A trailing "fixed" ("DET -2.5 fixed") marks a custom line that the line updater leaves alone.
 function parsePick(x){
-  const m = /^\s*([A-Z]{2,3})(?:\s+(PK|[+-]?\d+(?:\.\d+)?))?\s*$/i.exec(String(x));
+  const m = /^\s*([A-Z]{2,3})(?:\s+(PK|[+-]?\d+(?:\.\d+)?))?(?:\s+(fixed))?\s*$/i.exec(String(x));
   if(!m) return null;
-  return { team:m[1].toUpperCase(), spread: m[2]==null ? null : /pk/i.test(m[2]) ? 0 : Number(m[2]) };
+  return { team:m[1].toUpperCase(), spread: m[2]==null ? null : /pk/i.test(m[2]) ? 0 : Number(m[2]), fixed: !!m[3] };
 }
 function picksFor(w){
   const list = (S.pickLists[w] || []).map(parsePick).filter(Boolean), doc = S.weeks[w], out = {};
@@ -364,7 +365,10 @@ function renderPicks(){
   const times = doc.games.map(kickoff);
   const range = `${dateFmt.format(new Date(Math.min(...times)))} – ${dateFmt.format(new Date(Math.max(...times)))}`;
   const s = weekStats(w);
-  const ats = Object.values(picks).some(p=>p.spread!=null);
+  const atsPicks = Object.values(picks).filter(p=>p.spread!=null), ats = atsPicks.length > 0;
+  const atsNote = atsPicks.every(p=>p.fixed) ? "Graded against the spread, using Feras's own lines."
+    : atsPicks.some(p=>p.fixed) ? "Graded against the spread. Custom lines are fixed; the rest follow ESPN's line until kickoff, then lock."
+    : "Graded against the spread. Lines follow ESPN's line until kickoff, then lock.";
   return `
     <div class="weeks" role="list" aria-label="Weeks">${strip}</div>
     <div class="week-head">
@@ -379,7 +383,7 @@ function renderPicks(){
       </div>
     </div>
     ${liveBar()}
-    ${s.picked ? `<div class="note">${ats ? "Graded against the spread. Lines follow ESPN's line until kickoff, then lock." : "Graded straight up: a pick wins if that team wins."}</div>` : `<div class="note">${w > now ? "Picks for this week aren't in yet." : "No picks were made for this week."}</div>`}
+    ${s.picked ? `<div class="note">${ats ? atsNote :"Graded straight up: a pick wins if that team wins."}</div>` : `<div class="note">${w > now ? "Picks for this week aren't in yet." : "No picks were made for this week."}</div>`}
     <div class="games">${doc.games.map(g=>gameCard(g, picks[g.id])).join("")}</div>
     <div class="note">Times shown in your time zone.</div>`;
 }
