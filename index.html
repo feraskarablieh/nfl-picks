@@ -366,9 +366,10 @@ function renderPicks(){
   const range = `${dateFmt.format(new Date(Math.min(...times)))} – ${dateFmt.format(new Date(Math.max(...times)))}`;
   const s = weekStats(w);
   const atsPicks = Object.values(picks).filter(p=>p.spread!=null), ats = atsPicks.length > 0;
-  const atsNote = atsPicks.every(p=>p.fixed) ? "Graded against the spread, using Feras's own lines."
+  const atsNote = (atsPicks.every(p=>p.fixed) ? "Graded against the spread, using Feras's own lines."
     : atsPicks.some(p=>p.fixed) ? "Graded against the spread. Custom lines are fixed; the rest follow ESPN's line until kickoff, then lock."
-    : "Graded against the spread. Lines follow ESPN's line until kickoff, then lock.";
+    : "Graded against the spread. Lines follow ESPN's line until kickoff, then lock.")
+    + (atsPicks.length < Object.keys(picks).length ? " Moneyline (ML) picks just need to win." : "");
   return `
     <div class="weeks" role="list" aria-label="Weeks">${strip}</div>
     <div class="week-head">
@@ -411,7 +412,7 @@ function teamRow(g, side, pick){
   return `<div class="team ${picked?"picked":""} ${won?"won":""}">
     ${chip(t)}
     <span class="tname"><span class="city">${side==="home"?"@ ":""}${esc(t.city)}</span><b>${esc(t.name)}<span class="rec">${esc(t.record)}</span></b></span>
-    <span class="pick-tag">PICK${picked && pick.spread!=null ? " "+fmtSpread(pick.spread) : ""}</span>
+    <span class="pick-tag">PICK${picked ? " "+(pick.spread!=null ? fmtSpread(pick.spread) : "ML") : ""}</span>
     <span class="score">${g.state!=="pre" ? g[side+"Score"] : ""}</span>
   </div>`;
 }
