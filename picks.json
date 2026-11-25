@@ -1,6 +1,6 @@
 {
   "season": 2026,
-  "updatedAt": "2026-11-22T15:40:00Z",
+  "updatedAt": "2026-11-25T20:03:26Z",
   "linesUpdatedAt": "2026-11-13T18:45:27Z",
   "weeks": {
     "1": [],
@@ -13,6 +13,7 @@
     "8": ["WSH", "KC", "NE", "SEA"],
     "9": ["CIN", "DAL", "DEN", "DET", "NYG", "CHI", "BUF"],
     "10": ["DET -2.5 fixed", "KC -2.5 fixed", "GB +3.5 fixed", "BUF -6.5 fixed", "SF -2.5 fixed", "HOU +3.5 fixed", "JAX -6.5 fixed", "LAR -2.5 fixed", "CIN -2.5 fixed"],
-    "11": ["BUF -6.5 fixed", "CHI -6.5 fixed", "DAL -2.5 fixed", "DET -2.5 fixed", "KC -6.5 fixed", "PIT -2.5 fixed", "DEN -2.5 fixed", "JAX -6 fixed", "SF -2.5 fixed", "CIN -2.5 fixed"]
+    "11": ["BUF -6.5 fixed", "CHI -6.5 fixed", "DAL -2.5 fixed", "DET -2.5 fixed", "KC -6.5 fixed", "PIT -2.5 fixed", "DEN -2.5 fixed", "JAX -6 fixed", "SF -2.5 fixed", "CIN -2.5 fixed"],
+    "12": ["LAR -2.5 fixed", "BUF", "DAL -6.5 fixed", "DEN -2.5 fixed", "CHI -1.5 fixed", "CIN -6.5 fixed", "NYG -2.5 fixed", "MIN -2.5 fixed", "JAX -6.5 fixed", "HOU", "WSH -2.5 fixed", "SF"]
   }
 }
